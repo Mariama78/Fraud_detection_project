@@ -4,15 +4,14 @@ FROM python:3.11-slim
 # créer un répertoire de travail
 WORKDIR /app
 
-#copier tous les fichiers dans le conteneur
+# Copier les fichiers du projet dans l’image
 COPY . .
 
-# installer les dépendances
-RUN pip install --no-cache-dir -r requirements.txt
+# Installer les dépendances
+RUN pip install --upgrade pip && pip install -r requirements.txt
 
-# exposer les ports pour Flask et Streamlit
+# Exposer le port sur lequel Flask sera lancé
 EXPOSE 5000
-EXPOSE 8501
 
-# commande par défaut 
-CMD ["streamlit", "run", "streamlit_app.py"]
+# Lancer l'application Flask
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "app:app"]
