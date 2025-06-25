@@ -1,0 +1,10 @@
+flask
+tensorflow
+scikit-learn
+pillow
+pandas
+numpy
+streamlit
+xgboost
+requests
+gdown
