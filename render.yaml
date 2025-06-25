@@ -2,6 +2,6 @@ services:
   - type: web
     name: fraud-detection-api
     env: docker
+    repo: https://github.com/Mariama78/Fraud_detection_project
+    branch: main
     plan: free
-    dockerfilePath: Dockerfile
-    autoDeploy: true
