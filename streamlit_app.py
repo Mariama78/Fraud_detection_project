@@ -4,6 +4,8 @@ import pandas as pd
 from PIL import Image
 import io
 
+API_URL= "https://fraud-detection-project-2gyf.onrender.com"
+
 st.set_page_config(page_title="Détection de Fraude en Assurance", layout="wide")
 st.title("🚗🔍 Détection de Fraude à l'Assurance Automobile")
 st.subheader("Auteur: Mariama Ciré Camara")
@@ -58,7 +60,7 @@ with tabs[0]:
                 "PoliceReportFiled": police_report
             }
 
-            response = requests.post("http://127.0.0.1:5000/predict/tabulaire", json=input_data)
+            response = requests.post(f"{API_URL}/predict/tabulaire", json=input_data)
             if response.status_code == 200:
                 st.success(f"Résultat : {response.json()['prediction']}")
             else:
@@ -73,7 +75,7 @@ with tabs[1]:
         st.image(uploaded_image, caption="Image chargée", use_column_width=True)
         if st.button("🔍 Prédire depuis Image"):
             files = {"image": uploaded_image.getvalue()}
-            response = requests.post("http://127.0.0.1:5000/predict/image", files={"image": uploaded_image})
+            response = requests.post(f"{API_URL}/predict/image", files={"image": uploaded_image})
 
             if response.status_code == 200:
                 result = response.json()
