@@ -2,7 +2,7 @@ import streamlit as st
 import requests
 import pandas as pd
 from PIL import Image
-import io
+
 
 API_URL= "https://fraud-detection-project-uyvy.onrender.com"
 

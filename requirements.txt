@@ -1,10 +1,8 @@
-flask
-tensorflow
-scikit-learn
-pillow
+streamlit
 pandas
 numpy
-streamlit
-xgboost
+scikit-learn
+joblib
+tensorflow
+Pillow
 requests
-gdown
