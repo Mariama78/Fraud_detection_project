@@ -12,46 +12,59 @@ import io
 
 app = Flask(__name__)
 
-
-# Dossier de destination
-os.makedirs("model", exist_ok=True)
-
-# XGBoost model
+# Emplacements des fichiers
 xgb_path = "model/model_xgboost.pkl"
-if not os.path.exists(xgb_path):
-    gdown.download("https://drive.google.com/uc?id=1v6kqLaFlTJNFfLEk6CBCDhQmamm6BCZx", xgb_path, quiet=False)
-
-# ResNet model
 resnet_path = "model/resnet50_model.keras"
-if not os.path.exists(resnet_path):
-    gdown.download("https://drive.google.com/uc?id=1YcgcCaDBvydz1gTXRra6cF8s9reQmomv", resnet_path, quiet=False)
+encoder_path = "tabular_encoder.pkl"
+features_path = "tabular_features.pkl"
+
+# Variables globales
+xgb_model = None
+resnet_model = None
+encoder = None
+feature_names = None
 
 
-# Chargement
-xgb_model = joblib.load(xgb_path)
-resnet_model = load_model(resnet_path)
+@app.before_first_request
+def download_and_load_models():
+    global xgb_model, resnet_model, encoder, feature_names
 
-encoder = joblib.load("tabular_encoder.pkl")
-feature_names = joblib.load("tabular_features.pkl")
+    os.makedirs("model", exist_ok=True)
+
+    # Télécharger les modèles s'ils n'existent pas
+    if not os.path.exists(xgb_path):
+        gdown.download("https://drive.google.com/uc?id=1v6kqLaFlTJNFfLEk6CBCDhQmamm6BCZx", xgb_path, quiet=False)
+
+    if not os.path.exists(resnet_path):
+        gdown.download("https://drive.google.com/uc?id=1YcgcCaDBvydz1gTXRra6cF8s9reQmomv", resnet_path, quiet=False)
+
+    # Chargement des modèles
+    xgb_model = joblib.load(xgb_path)
+    resnet_model = load_model(resnet_path)
+
+    # Chargement des encodeurs (doivent être inclus dans le repo)
+    encoder = joblib.load(encoder_path)
+    feature_names = joblib.load(features_path)
 
 
 @app.route('/predict/tabulaire', methods=['POST'])
 def predict_tabulaire():
-    data = request.get_json()
+    global xgb_model, encoder, feature_names
 
-    # Convertir en DataFrame
+    data = request.get_json()
     df = pd.DataFrame([data])
 
-    # Appliquer l'encodage
     X_encoded = encoder.transform(df)
     X_df = pd.DataFrame(X_encoded, columns=feature_names)
 
-    # Faire la prédiction
     prediction = xgb_model.predict(X_df)[0]
     return jsonify({"prediction": "Fraude" if prediction == 1 else "Non-Fraude"})
 
+
 @app.route('/predict/image', methods=['POST'])
 def predict_image():
+    global resnet_model
+
     if 'image' not in request.files:
         return jsonify({"error": "Aucune image reçue"}), 400
 
@@ -60,11 +73,12 @@ def predict_image():
     img = img.resize((224, 224))
     img_array = image.img_to_array(img)
     img_array = tf.expand_dims(img_array, axis=0)
-    img_array = img_array / 255.0  # Normalisation
+    img_array = img_array / 255.0
 
     prediction = resnet_model.predict(img_array)[0][0]
     result = "Fraude" if prediction >= 0.3 else "Non-Fraude"
     return jsonify({"prediction": result, "probabilité_fraude": float(prediction)})
+
 
 if __name__ == '__main__':
     app.run(debug=True)

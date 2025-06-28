@@ -4,7 +4,7 @@ import pandas as pd
 from PIL import Image
 
 
-API_URL= "https://fraud-detection-project-i4aj.onrender.com"
+API_URL= "http://127.0.0.1:5000"
 
 st.set_page_config(page_title="Détection de Fraude en Assurance", layout="wide")
 st.title("🚗🔍 Détection de Fraude à l'Assurance Automobile")
