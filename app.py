@@ -3,9 +3,6 @@ import joblib
 import gdown
 import numpy as np
 import pandas as pd
-import tensorflow as tf
-from tensorflow.keras.models import load_model
-from tensorflow.keras.preprocessing import image
 from PIL import Image
 import os
 import io
@@ -38,13 +35,19 @@ def download_and_load_models():
     if not os.path.exists(resnet_path):
         gdown.download("https://drive.google.com/uc?id=1YcgcCaDBvydz1gTXRra6cF8s9reQmomv", resnet_path, quiet=False)
 
-    # Chargement des modèles
+    # Charger le modèle XGBoost
     xgb_model = joblib.load(xgb_path)
-    resnet_model = load_model(resnet_path)
 
-    # Chargement des encodeurs (doivent être inclus dans le repo)
+    # Charger le modèle ResNet dynamiquement (important pour Heroku)
+    import tensorflow as tf
+    from tensorflow.keras.models import load_model
+    globals()['resnet_model'] = load_model(resnet_path)
+
+    # Charger les encodeurs
     encoder = joblib.load(encoder_path)
     feature_names = joblib.load(features_path)
+
+    print("✅ Tous les modèles sont chargés.")
 
 
 @app.route('/predict/tabulaire', methods=['POST'])
@@ -71,6 +74,11 @@ def predict_image():
     img_file = request.files['image']
     img = Image.open(io.BytesIO(img_file.read())).convert("RGB")
     img = img.resize((224, 224))
+
+    # Importer TensorFlow ici uniquement pour éviter le problème de build
+    import tensorflow as tf
+    from tensorflow.keras.preprocessing import image
+
     img_array = image.img_to_array(img)
     img_array = tf.expand_dims(img_array, axis=0)
     img_array = img_array / 255.0
