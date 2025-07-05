@@ -22,7 +22,6 @@ encoder = None
 feature_names = None
 
 
-@app.before_first_request
 def download_and_load_models():
     global xgb_model, resnet_model, encoder, feature_names
 
@@ -89,5 +88,6 @@ def predict_image():
 
 
 if __name__ == '__main__':
+    download_and_load_models()
     port = int(os.environ.get("PORT", 5000))  
     app.run(host='0.0.0.0', port=port)
